@@ -18,6 +18,16 @@
         <v-container>
             <v-row>
                 <v-col cols="7">
+                  <v-row>
+                    <v-col cols="2">
+                    <v-combobox
+                      v-model="select"
+                      :items="items"
+                      outlined
+                      dense
+                    ></v-combobox>
+                    </v-col>
+                  </v-row>
                   <list/>
                 </v-col>
                 <v-col class="small" cols="5">
@@ -44,6 +54,13 @@ export default {
   },
 
   data: () => ({
+    select: 'Week 1',
+    items: [
+      'Week 1',
+      'Week 2',
+      'Week 3',
+      'Week 4',
+    ],
     chartoptions: {},
     chartdata: {
       labels: [ 'Red', 'Yellow', 'Blue' ],
