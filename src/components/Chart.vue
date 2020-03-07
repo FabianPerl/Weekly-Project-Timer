@@ -1,17 +1,12 @@
-<template>
-    <div>
-        <!-- How Long did I work on a project during the current week? -->
-    </div>
-</template>
-
 <script>
+import { Doughnut } from 'vue-chartjs'
+
 export default {
-    data: () => ({
-
-    }),
-    methods: {
-
-    }
+    extends: Doughnut,
+    props: ['chartdata', 'options'],
+    mounted () {
+        this.renderChart(this.chartdata, this.options)
+    },
 }
 </script>
 

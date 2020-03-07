@@ -30,7 +30,14 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <v-text-field label="Topic*" type="text" required></v-text-field>
+                            <div>Timer: {{ ("0" + hours).slice(-2) }}:{{ ("0" + minutes).slice(-2) }}:{{ ("0" + seconds).slice(-2) }}</div>
+                        </v-col>
+                        <v-divider></v-divider>
+                        <v-col cols="12">
+                            <v-text-field label="Project*" v-model="projectTyped" type="text" required></v-text-field>
+                        </v-col>
+                        <v-col cols="12">
+                            <v-text-field label="Topic*" v-model="topicTyped" type="text" required></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -58,8 +65,10 @@ export default {
         hours: 0,           // 0-24
         minutes: 0,         // 0-59
         seconds: 0,         // 0-59
-        title: "",        // When time will be saved, you can select which task you did. It will be analyzed
-        intervalId: null    // To stop interval
+        title: "",          // When time will be saved, you can select which task you did. It will be analyzed
+        intervalId: null,   // To stop interval
+        projectTyped: "",   // variable to buffer project
+        topicTyped: ""      // variable to buffer topic
     }),
     methods: {
         closeDialog: function () {
@@ -89,9 +98,9 @@ export default {
         },
         btnSaveClicked: function () {
             this.dialog = true
-           this.stop = false
-           this.start = true 
-           this.save = false
+            this.stop = false
+            this.start = true 
+            this.save = false
         },
         everySecond: function () {
             if (this.seconds < 59){

@@ -1,13 +1,12 @@
 <template>
     <div>
         <v-container>
-            <v-row class="text-center">
+            <v-row>
                 <v-col cols="12">
                     <template v-for="(item, index) in items">
                         <v-subheader
                         v-if="item.header"
                         :key="item.header"
-                        inset
                         >
                         {{ item.header }}
                         </v-subheader>
@@ -15,7 +14,6 @@
                         <v-divider
                         v-else-if="item.divider"
                         :key="index"
-                        inset
                         ></v-divider>
 
                         <v-list-item
@@ -23,6 +21,7 @@
                         :key="item.title"
                         ripple
                         >
+                        <v-list-item-icon></v-list-item-icon>
                         <v-list-item-content>
                             <v-list-item-subtitle v-html="item.subtitle"></v-list-item-subtitle>
                         </v-list-item-content>
@@ -38,6 +37,7 @@
 export default {
     data: () => ({
          //TODO: Subtitles have to be on the same point at the beginning
+         //TODO: Left: List, Right: Chart? Picking each weeks chart via dropdown box? Not just weekly clearing instead let it in
          items: [
           {
             header: 'Friday, 06.03.2020',
