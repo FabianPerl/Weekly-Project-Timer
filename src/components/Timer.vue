@@ -10,7 +10,7 @@
                         88:88:88
                     </div>
                     <div class="time lighton">
-                        {{ ("0" + hours).slice(-2) }}:{{ ("0" + minutes).slice(-2) }}:{{ ("0" + seconds).slice(-2) }}
+                        {{ getFormatedTime() }}
                     </div>
                 </v-col>
                 <v-col cols="12">
@@ -30,12 +30,12 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <div>Timer: {{ ("0" + hours).slice(-2) }}:{{ ("0" + minutes).slice(-2) }}:{{ ("0" + seconds).slice(-2) }}</div>
+                            <div>{{ getFormatedTime() }}</div>
                         </v-col>
                         <v-divider></v-divider>
                         <v-col cols="12">
-                            <v-text-field label="Topic*" v-model="topicTyped" type="text" required></v-text-field>
-                            <v-text-field label="Description*" v-model="descriptionTyped" type="text" required></v-text-field>
+                            <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field>
+                            <v-text-field label="Description*" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -44,7 +44,7 @@
                 <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="closeWithoutSave">Close</v-btn>
-                <v-btn color="blue darken-1" text @click="closeSave">Save</v-btn>
+                <v-btn color="blue darken-1" text @click="saveAsEntry">Save</v-btn>
                 </v-card-actions>
             </v-card> 
             </v-dialog>
@@ -66,17 +66,40 @@ export default {
         title: "",              // When time will be saved, you can select which task you did. It will be analyzed
         intervalId: null,       // To stop interval
         descriptionTyped: "",   // variable to buffer description
-        topicTyped: ""          // variable to buffer topic
+        topicTyped: "",         // variable to buffer topic
+        rules: {
+            ruleOne: [val => (val || '').length > 0 || 'This field is required']
+        }
     }),
     methods: {
+        getFormatedTime: function () {
+            return ("0" + this.hours).slice(-2) + ":" + ("0" + this.minutes).slice(-2) + ":" + ("0" + this.seconds).slice(-2)
+        },
         closeDialog: function () {
             this.dialog = false
         },
         closeWithoutSave: function () {
+            this.topicTyped = "",
+            this.descriptionTyped = ""
             this.closeDialog()
         },
-        closeSave: function() {
-            this.closeDialog()
+        saveAsEntry: function () {
+            if (!this.topicTyped || !this.descriptionTyped)
+                return
+
+            let time = this.getFormatedTime()
+            let topic = this.topicTyped
+            let description = this.descriptionTyped
+
+            let newTime = {
+                date: this.date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                time: time,
+                topic: topic,
+                description: description
+            }
+
+            this.$emit('newTimeEvent', newTime)
+            this.closeWithoutSave()
         },
         btnStartClicked: function() {
             this.intervalId = setInterval(this.everySecond, 1000)

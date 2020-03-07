@@ -14,12 +14,12 @@
     </v-app-bar>
 
     <v-content>
-      <Timer/>
+      <timer v-on:newTimeEvent="newTime"></timer>
         <v-container>
             <v-row>
-                <v-col cols="7">
+                <v-col cols="5">
                   <v-row>
-                    <v-col cols="2">
+                    <v-col cols="3">
                     <v-combobox
                       v-model="select"
                       :items="items"
@@ -28,7 +28,7 @@
                     ></v-combobox>
                     </v-col>
                   </v-row>
-                  <list/>
+                  <list :items="mapToItems"></list>
                 </v-col>
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
@@ -55,6 +55,8 @@ export default {
   },
 
   data: () => ({
+    timeEntries: 0,
+    listmap: null,
     select: 'Week 1',
     items: [
       'Week 1',
@@ -73,6 +75,54 @@ export default {
       ],
     }
   }),
+  created: function() {
+    this.listmap = new Map();
+    let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+    // if todays date isn't set, create it and push it to the map
+    if (!this.listmap.has(date))
+      this.listmap.set(date, [])
+  },
+  methods: {
+    newTime: function (newObj) {
+      if (!newObj || typeof newObj === 'undefined')
+        return
+
+      let {description, time, topic} = newObj;
+      let newEntry = {
+        description,
+        time,
+        topic
+      }
+
+      let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+      let list = this.listmap.get(date);
+      list.push(newEntry)
+      this.listmap.set(date, list)
+      this.timeEntries += 1
+    },
+  },
+  computed: {
+    mapToItems: function () {
+      let map = this.listmap
+      let list = []
+
+      for (let [key, value] of map.entries()) {
+        let date = key
+        let values = value
+
+        list.push({ header: date })
+        list.push({ divider: true })
+
+        for (let timeEntry of values) {
+          list.push({subtitle: timeEntry})
+        }
+      }
+
+      return this.timeEntries && list; // Hack for reactivity
+    },
+  }
 };
 </script>
 
