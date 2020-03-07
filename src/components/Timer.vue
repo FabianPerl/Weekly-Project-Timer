@@ -34,10 +34,8 @@
                         </v-col>
                         <v-divider></v-divider>
                         <v-col cols="12">
-                            <v-text-field label="Project*" v-model="projectTyped" type="text" required></v-text-field>
-                        </v-col>
-                        <v-col cols="12">
                             <v-text-field label="Topic*" v-model="topicTyped" type="text" required></v-text-field>
+                            <v-text-field label="Description*" v-model="descriptionTyped" type="text" required></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -58,17 +56,17 @@
 export default {
     data: () => ({
         dialog: false,
-        start: true,        // flag for disabling start button
-        stop: false,        // flag for disabling stop button
-        save: false,        // flag for disabling save button
+        start: true,            // flag for disabling start button
+        stop: false,            // flag for disabling stop button
+        save: false,            // flag for disabling save button
         date: new Date(),   
-        hours: 0,           // 0-24
-        minutes: 0,         // 0-59
-        seconds: 0,         // 0-59
-        title: "",          // When time will be saved, you can select which task you did. It will be analyzed
-        intervalId: null,   // To stop interval
-        projectTyped: "",   // variable to buffer project
-        topicTyped: ""      // variable to buffer topic
+        hours: 0,               // 0-24
+        minutes: 0,             // 0-59
+        seconds: 0,             // 0-59
+        title: "",              // When time will be saved, you can select which task you did. It will be analyzed
+        intervalId: null,       // To stop interval
+        descriptionTyped: "",   // variable to buffer description
+        topicTyped: ""          // variable to buffer topic
     }),
     methods: {
         closeDialog: function () {

@@ -33,6 +33,7 @@
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
                 </v-col>
+                <!-- TODO: Chart einbauen pro Monat? -->
             </v-row>
         </v-container>
     </v-content>
@@ -63,15 +64,13 @@ export default {
     ],
     chartoptions: {},
     chartdata: {
-      labels: [ 'Red', 'Yellow', 'Blue' ],
+      labels: [ 'Project A', 'Project B', 'Project C' ],
       datasets: [
         {
-          data: [10, 20, 30],
+          data: [20.20, 10.30, 15],
           backgroundColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 205, 86, 1)', 'rgba(54, 162, 235, 1)']
         }
       ],
-
-      // These labels appear in the legend and in the tooltips when hovering different arcs
     }
   }),
 };
