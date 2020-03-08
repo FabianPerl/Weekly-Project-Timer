@@ -32,6 +32,12 @@
                 </v-col>
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
+                  <div v-if="chartdata">
+                    <v-divider inset vertical></v-divider>
+                    <v-divider inset vertical></v-divider>
+                    <v-divider inset vertical></v-divider>
+                    <small>(time measured in minutes)</small>
+                  </div>
                 </v-col>
                 <!-- TODO: Chart einbauen pro Monat? -->
             </v-row>
@@ -64,16 +70,8 @@ export default {
       'Week 3',
       'Week 4',
     ],
-    chartoptions: {},
-    chartdata: {
-      labels: [ 'Project A', 'Project B', 'Project C' ],
-      datasets: [
-        {
-          data: [20.20, 10.30, 15],
-          backgroundColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 205, 86, 1)', 'rgba(54, 162, 235, 1)']
-        }
-      ],
-    }
+    chartoptions: {
+    },
   }),
   created: function() {
     this.listmap = new Map();
@@ -88,11 +86,12 @@ export default {
       if (!newObj || typeof newObj === 'undefined')
         return
 
-      let {description, time, topic} = newObj;
+      let {description, time, topic, minutes} = newObj;
       let newEntry = {
         description,
         time,
-        topic
+        topic,
+        minutes
       }
 
       let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -102,11 +101,65 @@ export default {
       this.listmap.set(date, list)
       this.timeEntries += 1
     },
+    randomNumber: function() {
+      return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
+    },
   },
   computed: {
+    chartdata: function() {
+
+      if (this.listmap.size == 0)
+        return null;
+
+      let myBackgroundColor = []
+      let projectTimeMap = new Map();
+
+      let map = this.listmap
+      for (let value of map.values()) {
+        let values = value
+
+        for (let timeEntry of values) {
+          let oldValue = 0
+
+          if (projectTimeMap.has(timeEntry.topic)) {
+            oldValue = projectTimeMap.get(timeEntry.topic) 
+          } 
+
+          let newValue = oldValue + timeEntry.minutes
+
+          projectTimeMap.set(timeEntry.topic, +(newValue.toFixed(3)))
+        }
+
+      }
+
+      let myLabels = []
+      let timeNeeded = []
+
+      projectTimeMap.forEach((value, key) => { 
+        myLabels.push(key)         
+        timeNeeded.push(value)
+        myBackgroundColor.push(this.randomNumber()) 
+      })
+
+      let chartdata1 = {
+        labels: myLabels,
+        datasets: [
+          {
+            data: timeNeeded,
+            backgroundColor: myBackgroundColor
+          }
+        ]
+      }
+
+      return this.timeEntries && chartdata1
+    },
     mapToItems: function () {
       let map = this.listmap
       let list = []
+
+      if (map.size == 0)
+        return list
+
 
       for (let [key, value] of map.entries()) {
         let date = key

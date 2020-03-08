@@ -87,6 +87,9 @@ export default {
             if (!this.topicTyped || !this.descriptionTyped)
                 return
 
+            if (this.hours === 0 && this.minutes === 0 && this.seconds === 0)
+                return
+
             let time = this.getFormatedTime()
             let topic = this.topicTyped
             let description = this.descriptionTyped
@@ -95,11 +98,12 @@ export default {
                 date: this.date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
                 time: time,
                 topic: topic,
-                description: description
+                description: description,
+                minutes: this.minutes + (this.seconds / 60) + (this.hours * 60)
             }
 
+            this.closeWithoutSave();
             this.$emit('newTimeEvent', newTime)
-            this.closeWithoutSave()
         },
         btnStartClicked: function() {
             this.intervalId = setInterval(this.everySecond, 1000)
