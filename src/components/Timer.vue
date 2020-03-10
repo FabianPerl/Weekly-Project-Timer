@@ -18,42 +18,21 @@
                     <v-divider class="mx-4" inset vertical></v-divider>
                     <v-btn color="error" :disabled="!stop" v-on:click="btnStopClicked">Stop</v-btn>
                     <v-divider class="mx-4" inset vertical></v-divider>
-                    <v-btn color="primary" :disabled="!save" v-on:click="btnSaveClicked">Save</v-btn>
+                    <v-btn color="primary" :disabled="!save" v-on:click="btnOpenDialog">Save</v-btn>
                 </v-col>
             </v-row>
-            <v-dialog v-model="dialog" persistent max-width="300px">
-            <v-card>
-                <v-card-title>
-                <span class="headline">Save Entry</span>
-                </v-card-title>
-                <v-card-text>
-                <v-container>
-                    <v-row>
-                        <v-col cols="12">
-                            <div>{{ getFormatedTime() }}</div>
-                        </v-col>
-                        <v-divider></v-divider>
-                        <v-col cols="12">
-                            <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field>
-                            <v-text-field label="Description*" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
-                        </v-col>
-                    </v-row>
-                </v-container>
-                <small>*indicates required field</small>
-                </v-card-text>
-                <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeWithoutSave">Close</v-btn>
-                <v-btn color="blue darken-1" text @click="saveAsEntry">Save</v-btn>
-                </v-card-actions>
-            </v-card> 
-            </v-dialog>
         </v-container>
+        <entry-dialog title="Save Entry" :dialog="dialog" :time="getFormatedTime()" v-on:closeDialog="dialog = false" :date="date" v-on:saveEntryEvent="saveEntry"></entry-dialog>
     </div>
 </template>
 
 <script>
+import EntryDialog from './EntryDialog.vue'
+
 export default {
+    components: {
+        EntryDialog
+    },
     data: () => ({
         dialog: false,
         start: true,            // flag for disabling start button
@@ -65,45 +44,10 @@ export default {
         seconds: 0,             // 0-59
         title: "",              // When time will be saved, you can select which task you did. It will be analyzed
         intervalId: null,       // To stop interval
-        descriptionTyped: "",   // variable to buffer description
-        topicTyped: "",         // variable to buffer topic
-        rules: {
-            ruleOne: [val => (val || '').length > 0 || 'This field is required']
-        }
     }),
     methods: {
         getFormatedTime: function () {
             return ("0" + this.hours).slice(-2) + ":" + ("0" + this.minutes).slice(-2) + ":" + ("0" + this.seconds).slice(-2)
-        },
-        closeDialog: function () {
-            this.dialog = false
-        },
-        closeWithoutSave: function () {
-            this.topicTyped = "",
-            this.descriptionTyped = ""
-            this.closeDialog()
-        },
-        saveAsEntry: function () {
-            if (!this.topicTyped || !this.descriptionTyped)
-                return
-
-            if (this.hours === 0 && this.minutes === 0 && this.seconds === 0)
-                return
-
-            let time = this.getFormatedTime()
-            let topic = this.topicTyped
-            let description = this.descriptionTyped
-
-            let newTime = {
-                date: this.date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-                time: time,
-                topic: topic,
-                description: description,
-                minutes: this.minutes + (this.seconds / 60) + (this.hours * 60)
-            }
-
-            this.closeWithoutSave();
-            this.$emit('newTimeEvent', newTime)
         },
         btnStartClicked: function() {
             this.intervalId = setInterval(this.everySecond, 1000)
@@ -121,11 +65,16 @@ export default {
             this.save = true
             this.stop = false
         },
-        btnSaveClicked: function () {
+        btnOpenDialog: function () {
             this.dialog = true
             this.stop = false
             this.start = true 
             this.save = false
+        },
+        saveEntry: function (entry) {
+            entry.minutes = this.minutes + (this.seconds / 60) + (this.hours * 60)
+
+            this.$emit('newTimeEvent', entry)
         },
         everySecond: function () {
             if (this.seconds < 59){

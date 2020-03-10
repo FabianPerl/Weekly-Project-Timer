@@ -7,6 +7,8 @@
     >
       <div class="d-flex align-center">
         <h1>Timer</h1>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <h5>{{ timeEntries }} Entries</h5>
       </div>
 
       <v-spacer></v-spacer>
@@ -23,18 +25,17 @@
                     <v-combobox
                       v-model="select"
                       :items="items"
+                      disabled
                       outlined
                       dense
                     ></v-combobox>
                     </v-col>
                   </v-row>
-                  <list :items="mapToItems"></list>
+                  <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
                 </v-col>
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
                   <div v-if="chartdata">
-                    <v-divider inset vertical></v-divider>
-                    <v-divider inset vertical></v-divider>
                     <v-divider inset vertical></v-divider>
                     <small>(time measured in minutes)</small>
                   </div>
@@ -62,6 +63,7 @@ export default {
 
   data: () => ({
     timeEntries: 0,
+    buffered: 0,
     listmap: null,
     select: 'Week 1',
     items: [
@@ -82,24 +84,48 @@ export default {
       this.listmap.set(date, [])
   },
   methods: {
+    deleteEntry: function (entry) {
+      let newSetMap = new Map(this.listmap)
+      let values = newSetMap.get(entry.date)
+      let pos = values.map(element => { return element.id }).indexOf(entry.id)
+
+      values.pop(pos)
+
+      this.listmap = newSetMap
+      this.timeEntries = this.timeEntries + 0;
+    },
+    editEntry: function (entry) {
+      let newSetMap = new Map(this.listmap)
+      let values = newSetMap.get(entry.date)
+      let pos = values.map(element => { return element.id }).indexOf(entry.id)
+      
+      values[pos] = entry
+
+      this.listmap = newSetMap
+      this.timeEntries = this.timeEntries + 0;
+    },
     newTime: function (newObj) {
       if (!newObj || typeof newObj === 'undefined')
         return
 
+      let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
       let {description, time, topic, minutes} = newObj;
       let newEntry = {
         description,
         time,
+        date,
         topic,
-        minutes
+        minutes,
+        id : this.timeEntries
       }
 
-      let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
 
       let list = this.listmap.get(date);
       list.push(newEntry)
       this.listmap.set(date, list)
       this.timeEntries += 1
+      // this.$store.commit('increment')
     },
     randomNumber: function() {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
@@ -107,7 +133,6 @@ export default {
   },
   computed: {
     chartdata: function() {
-
       if (this.listmap.size == 0)
         return null;
 
@@ -159,7 +184,6 @@ export default {
 
       if (map.size == 0)
         return list
-
 
       for (let [key, value] of map.entries()) {
         let date = key

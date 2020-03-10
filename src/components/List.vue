@@ -16,18 +16,7 @@
                         :key="index"
                         ></v-divider>
 
-                        <v-list-item
-                        v-else
-                        :key="item.title"
-                        ripple
-                        >
-                        <v-list-item-icon></v-list-item-icon>
-                        <v-list-item-content>
-                            <v-list-item-subtitle>
-                              <time-entry :topic="item.subtitle.topic" :description="item.subtitle.description" :time="item.subtitle.time"></time-entry>
-                            </v-list-item-subtitle>
-                        </v-list-item-content>
-                        </v-list-item>
+                        <time-entry v-else :key="item.title" :topic="item.subtitle.topic" :description="item.subtitle.description" :time="item.subtitle.time" :minutes="item.subtitle.minutes" v-on:editEntry="editEntry" :id="item.subtitle.id" v-on:deleteEntry="deleteEntry(item.subtitle.date, item.subtitle.id)"></time-entry>
                     </template>
                 </v-col>
             </v-row>
@@ -43,8 +32,16 @@ export default {
       TimeEntry
     },
     props: ['items'],
+    methods: {
+        editEntry (entry) {
+            this.$emit('editEntry', entry);
+        },
+        deleteEntry (date,id) {
+            this.$emit('deleteEntry', {date:date, id: id})
+        }
+    }
 }
 </script>
 
-<style>
+<style scoped>
 </style>
