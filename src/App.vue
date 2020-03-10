@@ -16,7 +16,7 @@
     </v-app-bar>
 
     <v-content>
-      <timer v-on:newTimeEvent="newTime"></timer>
+      <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
         <v-container>
             <v-row>
                 <v-col cols="5">
@@ -132,6 +132,21 @@ export default {
     },
   },
   computed: {
+    getAllProjects: function () {
+      let projectSet = new Set()
+
+      let map = this.listmap
+      for (let value of map.values()) {
+        let values = value
+
+        for (let timeEntry of values) {
+          projectSet.add(timeEntry.topic)
+        }
+
+      }
+
+      return this.timeEntries && [...projectSet];
+    },
     chartdata: function() {
       if (this.listmap.size == 0)
         return null;

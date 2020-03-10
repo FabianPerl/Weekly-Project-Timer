@@ -22,7 +22,7 @@
                 </v-col>
             </v-row>
         </v-container>
-        <entry-dialog title="Save Entry" :dialog="dialog" :time="getFormatedTime()" v-on:closeDialog="dialog = false" :date="date" v-on:saveEntryEvent="saveEntry"></entry-dialog>
+        <entry-dialog title="Save Entry" :projects="projects" :dialog="dialog" :time="getFormatedTime()" v-on:closeDialog="dialog = false" :date="date" v-on:saveEntryEvent="saveEntry"></entry-dialog>
     </div>
 </template>
 
@@ -33,6 +33,7 @@ export default {
     components: {
         EntryDialog
     },
+    props: ['projects'],
     data: () => ({
         dialog: false,
         start: true,            // flag for disabling start button

@@ -12,7 +12,20 @@
                 </v-col>
                 <v-divider></v-divider>
                 <v-col cols="12">
-                    <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field>
+                    <!-- TODO: https://vuetifyjs.com/en/components/combobox/ -->
+                    <v-combobox
+                        v-model="topicTyped"
+                        :items="projects || []"
+                        full-width
+                        hide-details
+                        hide-no-data
+                        hide-selected
+                        deletable-chips
+                        single-line
+                        label="Topic*"
+                        :rules="rules.ruleOne"
+                    ></v-combobox>
+                    <!-- <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field> -->
                     <v-text-field label="Description*" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
                 </v-col>
             </v-row>
@@ -31,6 +44,8 @@
 <script>
 export default {
     props: { 
+        projects: {
+        },
         dialog: {
             type: Boolean,
             required: true
