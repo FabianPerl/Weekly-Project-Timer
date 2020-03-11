@@ -35,9 +35,9 @@
                 </v-col>
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
-                  <div v-if="chartdata">
+                  <div v-if="chartdata.labels">
                     <v-divider inset vertical></v-divider>
-                    <small>(time measured in minutes)</small>
+                    <small v-if="chartdata.labels.length > 0">(time measured in minutes)</small>
                   </div>
                 </v-col>
                 <!-- TODO: Chart einbauen pro Monat? -->

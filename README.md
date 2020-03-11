@@ -1,29 +1,26 @@
-# timer
+# Weekly Project Timer
 
-## Project setup
+## Description
+This tool uses a built-in digital timer to calculate the time spent on a project in a specified time period. 
+
+### Timer
+![timer](./src/assets/images/Timer.png "Timer")
+
+### Project List
+![projectlist](./src/assets/images/ProjectList.png "Project List")
+
+## Setup
+### Project setup
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+#### Compiles and hot-reloads for development
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+#### Compiles and minifies for production
 ```
 npm run build
 ```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
