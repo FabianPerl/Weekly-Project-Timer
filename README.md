@@ -3,6 +3,7 @@
 ## Description
 This tool uses a built-in digital timer to calculate the time spent on a project in a specified time period. 
 
+## Images
 ### Timer
 ![timer](./src/assets/images/Timer.png "Timer")
 
