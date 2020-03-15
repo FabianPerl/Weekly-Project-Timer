@@ -4,7 +4,7 @@
             <v-row class="text-center">
                 <v-col cols="12">
                     <div class="day">
-                        {{date}}
+                        {{ getFormattedDate() }}
                     </div>
                     <div class="time placeholdertime">
                         88:88:88
@@ -47,6 +47,9 @@ export default {
         intervalId: null,       // To stop interval
     }),
     methods: {
+        getFormattedDate: function () {
+            return this.date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+        },
         getFormatedTime: function () {
             return ("0" + this.hours).slice(-2) + ":" + ("0" + this.minutes).slice(-2) + ":" + ("0" + this.seconds).slice(-2)
         },
@@ -102,6 +105,11 @@ export default {
 @font-face {
     font-family: 'digital-7';
     src: url('../assets/fonts/digital-7.ttf');
+}
+
+.day {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 15px;
 }
 
 .time {

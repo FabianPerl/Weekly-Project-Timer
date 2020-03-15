@@ -35,9 +35,9 @@
                 </v-col>
                 <v-col class="small" cols="5">
                   <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
-                  <div v-if="chartdata.labels">
+                  <div>
                     <v-divider inset vertical></v-divider>
-                    <small v-if="chartdata.labels.length > 0">(time measured in minutes)</small>
+                    <small>(time measured in minutes)</small>
                   </div>
                 </v-col>
                 <!-- TODO: Chart einbauen pro Monat? -->
@@ -64,7 +64,7 @@ export default {
   data: () => ({
     timeEntries: 0,
     buffered: 0,
-    listmap: null,
+    listmap: new Map(),
     select: 'Week 1',
     items: [
       'Week 1',
@@ -75,15 +75,41 @@ export default {
     chartoptions: {
     },
   }),
+  watch: {
+    timeEntries () {
+      console.log(this.timeEntries)
+      const mapToObj = m => {
+        return Array.from(m).reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+      };
+
+      let myMap = JSON.stringify(mapToObj(this.listmap))
+      // console.log(myMap)
+
+      localStorage.setItem('entryMap', myMap)
+    }
+  },
   created: function() {
-    this.listmap = new Map();
-    let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    let map = new Map();
+    if (localStorage.entryMap) {
+      map = new Map(Object.entries(JSON.parse(localStorage.getItem('entryMap'))))
+    } 
+
+    let date = this.formattedDate(new Date())
+    this.listmap = map;
+    console.log(`in created method:`)
+    console.log(this.listmap)
 
     // if todays date isn't set, create it and push it to the map
     if (!this.listmap.has(date))
       this.listmap.set(date, [])
   },
   methods: {
+    formattedDate: function (date) {
+        return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    },
     deleteEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
       let values = newSetMap.get(entry.date)
@@ -93,6 +119,7 @@ export default {
 
       this.listmap = newSetMap
       this.timeEntries = this.timeEntries + 0;
+      return this.timeEntries
     },
     editEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
@@ -103,12 +130,13 @@ export default {
 
       this.listmap = newSetMap
       this.timeEntries = this.timeEntries + 0;
+      return this.timeEntries
     },
     newTime: function (newObj) {
       if (!newObj || typeof newObj === 'undefined')
         return
 
-      let date = (new Date()).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      let date = this.formattedDate(new Date())
       let {description, time, topic, minutes} = newObj;
       let newEntry = {
         description,
@@ -119,13 +147,12 @@ export default {
         id : this.timeEntries
       }
 
-
-
       let list = this.listmap.get(date);
       list.push(newEntry)
-      this.listmap.set(date, list)
-      this.timeEntries += 1
-      // this.$store.commit('increment')
+      // this.listmap.set(date, list)
+      this.$set(this.listmap, date, list)
+      this.timeEntries = this.timeEntries + 1
+      return this.timeEntries;
     },
     randomNumber: function() {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
@@ -134,27 +161,23 @@ export default {
   computed: {
     getAllProjects: function () {
       let projectSet = new Set()
-
       let map = this.listmap
+
       for (let value of map.values()) {
         let values = value
 
         for (let timeEntry of values) {
           projectSet.add(timeEntry.topic)
         }
-
       }
 
       return this.timeEntries && [...projectSet];
     },
     chartdata: function() {
-      if (this.listmap.size == 0)
-        return null;
-
       let myBackgroundColor = []
       let projectTimeMap = new Map();
-
       let map = this.listmap
+
       for (let value of map.values()) {
         let values = value
 
@@ -166,10 +189,8 @@ export default {
           } 
 
           let newValue = oldValue + timeEntry.minutes
-
           projectTimeMap.set(timeEntry.topic, +(newValue.toFixed(3)))
         }
-
       }
 
       let myLabels = []
@@ -196,9 +217,6 @@ export default {
     mapToItems: function () {
       let map = this.listmap
       let list = []
-
-      if (map.size == 0)
-        return list
 
       for (let [key, value] of map.entries()) {
         let date = key

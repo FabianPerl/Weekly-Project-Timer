@@ -18,6 +18,7 @@
                         :items="projects || []"
                         full-width
                         hide-details
+                        @keyup.enter=saveAsEntry
                         hide-no-data
                         hide-selected
                         deletable-chips
@@ -26,7 +27,7 @@
                         :rules="rules.ruleOne"
                     ></v-combobox>
                     <!-- <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field> -->
-                    <v-text-field label="Description*" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
+                    <v-text-field label="Description*" @keyup.enter="saveAsEntry" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
                 </v-col>
             </v-row>
         </v-container>
