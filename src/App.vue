@@ -34,7 +34,7 @@
                   <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
                 </v-col>
                 <v-col class="small" cols="5">
-                  <doughnut :chartdata="chartdata" :options="chartoptions"></doughnut>
+                  <doughnut :chart-data="chartdata" :options="chartoptions"></doughnut>
                   <div>
                     <v-divider inset vertical></v-divider>
                     <small>(time measured in minutes)</small>
@@ -77,30 +77,16 @@ export default {
   }),
   watch: {
     timeEntries () {
-      console.log(this.timeEntries)
-      const mapToObj = m => {
-        return Array.from(m).reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {});
-      };
-
-      let myMap = JSON.stringify(mapToObj(this.listmap))
-      // console.log(myMap)
-
-      localStorage.setItem('entryMap', myMap)
     }
   },
   created: function() {
     let map = new Map();
     if (localStorage.entryMap) {
-      map = new Map(Object.entries(JSON.parse(localStorage.getItem('entryMap'))))
+      map = this.parseObjToMap(JSON.parse(localStorage.getItem('entryMap')))
     } 
 
     let date = this.formattedDate(new Date())
     this.listmap = map;
-    console.log(`in created method:`)
-    console.log(this.listmap)
 
     // if todays date isn't set, create it and push it to the map
     if (!this.listmap.has(date))
@@ -118,8 +104,7 @@ export default {
       values.pop(pos)
 
       this.listmap = newSetMap
-      this.timeEntries = this.timeEntries + 0;
-      return this.timeEntries
+      this.saveEntries();
     },
     editEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
@@ -129,8 +114,7 @@ export default {
       values[pos] = entry
 
       this.listmap = newSetMap
-      this.timeEntries = this.timeEntries + 0;
-      return this.timeEntries
+      this.saveEntries();
     },
     newTime: function (newObj) {
       if (!newObj || typeof newObj === 'undefined')
@@ -149,10 +133,22 @@ export default {
 
       let list = this.listmap.get(date);
       list.push(newEntry)
-      // this.listmap.set(date, list)
       this.$set(this.listmap, date, list)
-      this.timeEntries = this.timeEntries + 1
-      return this.timeEntries;
+      this.saveEntries();
+    },
+    parseObjToMap (obj) {
+      return new Map(Object.entries(obj))
+    },
+    parseMapToObj (map) {
+        return Array.from(map).reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+    },
+    saveEntries () {
+      let myMap = JSON.stringify(this.parseMapToObj(this.listmap))
+      this.listmap = this.parseObjToMap(this.parseMapToObj(this.listmap))
+      localStorage.setItem('entryMap', myMap)
     },
     randomNumber: function() {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
@@ -171,7 +167,7 @@ export default {
         }
       }
 
-      return this.timeEntries && [...projectSet];
+      return [...projectSet];
     },
     chartdata: function() {
       let myBackgroundColor = []
@@ -212,7 +208,7 @@ export default {
         ]
       }
 
-      return this.timeEntries && chartdata1
+      return chartdata1
     },
     mapToItems: function () {
       let map = this.listmap
@@ -230,7 +226,7 @@ export default {
         }
       }
 
-      return this.timeEntries && list; // Hack for reactivity
+      return list; // Hack for reactivity
     },
   }
 };
