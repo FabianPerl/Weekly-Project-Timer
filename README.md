@@ -11,6 +11,8 @@ This tool uses a built-in digital timer to calculate the time spent on a project
 ![projectlist](./src/assets/images/ProjectList.png "Project List")
 
 ## Setup
+Note: To setup the project you have to install VueCLI.
+
 ### Project setup
 ```
 npm install
