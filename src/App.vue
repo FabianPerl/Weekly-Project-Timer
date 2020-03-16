@@ -39,6 +39,8 @@
                     <v-divider inset vertical></v-divider>
                     <small>(time measured in minutes)</small>
                   </div>
+                  <v-divider inset vertical></v-divider>
+                  <bar></bar>
                 </v-col>
                 <!-- TODO: Chart einbauen pro Monat? -->
             </v-row>
@@ -50,7 +52,8 @@
 <script>
 import Timer from './components/Timer.vue'
 import List from './components/List.vue'
-import Doughnut from './components/Chart.vue'
+import Doughnut from './components/DoughnutChart.vue'
+import Bar from './components/BarChart.vue'
 
 export default {
   name: 'App',
@@ -58,7 +61,8 @@ export default {
   components: {
     Timer,
     List,
-    Doughnut
+    Doughnut,
+    Bar
   },
 
   data: () => ({
