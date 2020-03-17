@@ -5,6 +5,8 @@ This tool uses a built-in digital timer to calculate the time spent on a project
 It uses the Browser's _LocalStorage_ to save every Entry, __nothing goes to a Backend!__
 Your data remains your data! :metal:
 
+You can add new time-entries to the list by starting the timer.
+
 ## Images
 ### Timer
 ![timer](./src/assets/images/Timer.png "Timer")
