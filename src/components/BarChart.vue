@@ -4,7 +4,7 @@ import { Bar } from 'vue-chartjs'
 export default {
     data: () => ({
         chartdata: {
-            labels: ['Used','Free'],
+            labels: ['Spent','Available'],
             datasets: [
                 {
                 label: 'Week 1',

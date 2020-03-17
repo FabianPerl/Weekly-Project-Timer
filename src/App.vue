@@ -51,7 +51,7 @@
                         <v-col col="1">
                           <v-text-field disabled :placeholder="timeHours + ' Hours'" class="" type="number"></v-text-field>
                         </v-col>
-                        <v-col class="mt-5" col="1">
+                        <v-col col="1">
                           <v-btn disabled small>Change</v-btn>
                         </v-col>
                       </v-row>

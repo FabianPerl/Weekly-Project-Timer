@@ -2,36 +2,29 @@
     <v-dialog v-model="dialog" persistent max-width="300px">
     <v-card>
         <v-card-title>
-        <span class="headline">{{ title }}</span>
+            <span class="headline">{{ title }}</span>
         </v-card-title>
         <v-card-text>
         <v-container>
             <v-row>
                 <v-col cols="12">
-                    <div>{{ time }}</div>
+                    <div class="text-center">{{ time }}</div>
                 </v-col>
-                <v-divider></v-divider>
                 <v-col cols="12">
-                    <!-- TODO: https://vuetifyjs.com/en/components/combobox/ -->
                     <v-combobox
                         v-model="topicTyped"
-                        :items="projects || []"
-                        full-width
-                        hide-details
-                        @keyup.enter=saveAsEntry
-                        hide-no-data
-                        hide-selected
-                        deletable-chips
-                        single-line
+                        :items="sortedProjects"
                         label="Topic*"
+                        @keyup.enter=saveAsEntry
                         :rules="rules.ruleOne"
-                    ></v-combobox>
-                    <!-- <v-text-field label="Topic*" v-model="topicTyped" type="text" :rules="rules.ruleOne"></v-text-field> -->
+                        >
+                    </v-combobox>
                     <v-text-field label="Description*" @keyup.enter="saveAsEntry" v-model="descriptionTyped" type="text" :rules="rules.ruleOne"></v-text-field>
                 </v-col>
+            <v-divider class="mt-4" inset vertical></v-divider>
             </v-row>
+            <small><sup>*</sup>required field</small>
         </v-container>
-        <small>*indicates required field</small>
         </v-card-text>
         <v-card-actions>
         <v-spacer></v-spacer>
@@ -46,6 +39,7 @@
 export default {
     props: { 
         projects: {
+            type: Array
         },
         dialog: {
             type: Boolean,
@@ -110,6 +104,15 @@ export default {
 
             this.closeDialog();
         },
+    },
+    computed: {
+        sortedProjects: function () {
+            if (!this.projects) 
+                return []
+
+            let arr = this.projects
+            return arr.sort();
+        }
     }
 }
 </script>
