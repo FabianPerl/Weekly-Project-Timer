@@ -8,7 +8,7 @@
       <div class="d-flex align-center">
         <h1>Timer</h1>
         <v-divider class="mx-4" inset vertical></v-divider>
-        <h5>{{ timeEntries }} Entries</h5>
+        <h5>Project Manager</h5>
       </div>
 
       <v-spacer></v-spacer>
@@ -17,32 +17,47 @@
 
     <v-content>
       <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
+        <v-divider class="mb-12" inset vertical></v-divider>
         <v-container>
             <v-row>
-                <v-col cols="5">
+                <v-col cols="12">
                   <v-row>
+                    <v-col cols="5" class="pr-10">
+                      <v-combobox
+                        style="width: 120px"
+                        v-model="select"
+                        :items="items"
+                        disabled
+                        outlined
+                        dense
+                      ></v-combobox>
+                      <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
+                      </v-col>
+                    <v-divider class="ml-9 mr-12" inset vertical></v-divider>
                     <v-col cols="3">
-                    <v-combobox
-                      v-model="select"
-                      :items="items"
-                      disabled
-                      outlined
-                      dense
-                    ></v-combobox>
+                      <h3>Projects</h3>
+                      <v-divider class="mb-5" inset vertical></v-divider>
+                      <doughnut :chart-data="chartdata" :options="chartoptions"></doughnut>
+                      <div>
+                        <v-divider inset vertical></v-divider>
+                        <small><sup>*</sup>(time measured in minutes)</small>
+                      </div>
+                    </v-col>
+                    <v-col cols="3">
+                      <h3>Time Spent</h3>
+                      <v-divider class="mb-5" inset vertical></v-divider>
+                      <bar></bar>
+                      <v-row align="center">
+                        <v-col col="1">
+                          <v-text-field disabled :placeholder="timeHours + ' Hours'" class="" type="number"></v-text-field>
+                        </v-col>
+                        <v-col class="mt-5" col="1">
+                          <v-btn disabled small>Change</v-btn>
+                        </v-col>
+                      </v-row>
                     </v-col>
                   </v-row>
-                  <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
                 </v-col>
-                <v-col class="small" cols="5">
-                  <doughnut :chart-data="chartdata" :options="chartoptions"></doughnut>
-                  <div>
-                    <v-divider inset vertical></v-divider>
-                    <small>(time measured in minutes)</small>
-                  </div>
-                  <v-divider inset vertical></v-divider>
-                  <!-- <bar></bar> -->
-                </v-col>
-                <!-- TODO: Chart einbauen pro Monat? -->
             </v-row>
         </v-container>
     </v-content>
@@ -53,7 +68,7 @@
 import Timer from './components/Timer.vue'
 import List from './components/List.vue'
 import Doughnut from './components/DoughnutChart.vue'
-// import Bar from './components/BarChart.vue'
+import Bar from './components/BarChart.vue'
 
 export default {
   name: 'App',
@@ -62,10 +77,12 @@ export default {
     Timer,
     List,
     Doughnut,
-    // Bar
+    Bar
   },
 
   data: () => ({
+    timeHours: 40,
+    freeHours: 6,
     timeEntries: 0,
     buffered: 0,
     listmap: new Map(),
@@ -79,10 +96,6 @@ export default {
     chartoptions: {
     },
   }),
-  watch: {
-    timeEntries () {
-    }
-  },
   created: function() {
     let map = new Map();
     if (localStorage.entryMap) {
@@ -95,8 +108,17 @@ export default {
     // if todays date isn't set, create it and push it to the map
     if (!this.listmap.has(date))
       this.listmap.set(date, [])
+
+    this.orderMap()
   },
   methods: {
+    orderMap () {
+      let sortedMap = new Map([...this.listmap.entries()].sort((a, b) => { 
+        return new Date(b[0]).getTime() - new Date(a[0]).getTime()
+      }))
+
+      this.listmap = sortedMap
+    },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     },
@@ -135,6 +157,7 @@ export default {
         id : this.timeEntries
       }
 
+      this.timeEntries++;
       let list = this.listmap.get(date);
       list.push(newEntry)
       this.$set(this.listmap, date, list)
@@ -144,14 +167,15 @@ export default {
       return new Map(Object.entries(obj))
     },
     parseMapToObj (map) {
-        return Array.from(map).reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {});
+      return Array.from(map).reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
     },
     saveEntries () {
-      let myMap = JSON.stringify(this.parseMapToObj(this.listmap))
-      this.listmap = this.parseObjToMap(this.parseMapToObj(this.listmap))
+      let arr = this.parseMapToObj(this.listmap)
+      let myMap = JSON.stringify(arr)
+      this.listmap = this.parseObjToMap(arr)
       localStorage.setItem('entryMap', myMap)
     },
     randomNumber: function() {
