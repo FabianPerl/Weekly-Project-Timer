@@ -3,7 +3,7 @@
 ## Description
 This tool uses a built-in digital timer to calculate the time spent on a project in a specified time period. 
 It uses the Browser's _LocalStorage_ to save every Entry, __nothing goes to a Backend!__
-Your data remains your data! :metal
+Your data remains your data! :metal:
 
 ## Images
 ### Timer
