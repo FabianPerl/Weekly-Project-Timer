@@ -9,8 +9,14 @@ Your data remains your data! :metal
 ### Timer
 ![timer](./src/assets/images/Timer.png "Timer")
 
-### Project List
-![projectlist](./src/assets/images/ProjectList.png "Project List")
+### List
+![list](./src/assets/images/ProjectList.png "List")
+
+### Chart
+![charts](./src/assets/images/Charts.png "Charts")
+
+### Application
+![application](./src/assets/images/Application.png "Application")
 
 ## Setup
 Note: To setup the project you have to install VueCLI.
