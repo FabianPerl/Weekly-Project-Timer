@@ -26,10 +26,10 @@
                   <v-row>
                     <v-col cols="5" class="pr-10">
                       <v-combobox
-                        style="width: 120px"
-                        v-model="select"
-                        :items="items"
-                        disabled
+                        style="width: 80px"
+                        v-model="selectedWeek"
+                        :items="getAllWeeks"
+                        label="Week"
                         outlined
                         dense
                       ></v-combobox>
@@ -88,15 +88,9 @@ export default {
     freeHours: 6,
     timeEntries: 0,
     currentWeek: moment().week() + '',
+    selectedWeek: moment().week() + '',
     buffered: 0,
     listmap: new Map(),
-    select: 'Week 1',
-    items: [
-      'Week 1',
-      'Week 2',
-      'Week 3',
-      'Week 4',
-    ],
   }),
   created: function() {
     let map = new Map();
@@ -108,22 +102,22 @@ export default {
     this.listmap = map
   },
   methods: {
-    orderMap () {
-      let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
+    // orderMap () {
+    //   let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
 
-      // sort the weeks time entries
-      sortEntries.sort((a, b) => { 
-        return new Date(b[0]).getTime() - new Date(a[0]).getTime()
-      })
+    //   // sort the weeks time entries
+    //   sortEntries.sort((a, b) => { 
+    //     return new Date(b[0]).getTime() - new Date(a[0]).getTime()
+    //   })
 
-      this.listmap.set(this.currentWeek, sortEntries)
-    },
+    //   this.listmap.set(this.currentWeek, sortEntries)
+    // },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     },
     deleteEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(this.currentWeek).get(entry.date)
+      let values = newSetMap.get(this.selectedWeek).get(entry.date)
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
 
       values.pop(pos)
@@ -133,7 +127,7 @@ export default {
     },
     editEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(this.currentWeek).get(entry.date)
+      let values = newSetMap.get(this.selectedWeek).get(entry.date)
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
       
       values[pos] = entry
@@ -198,9 +192,12 @@ export default {
     },
   },
   computed: {
+    getAllWeeks: function () {
+      return [...this.listmap.keys()]
+    },
     getAllProjects: function () {
       let projectSet = new Set()
-      let map = this.listmap.get(this.currentWeek) || new Map()
+      let map = this.listmap.get(this.selectedWeek) || new Map()
 
       for (let value of map.values()) {
         let values = value
@@ -214,7 +211,7 @@ export default {
     },
     chartdata: function() {
       let projectTimeMap = new Map();
-      let map = this.listmap.get(this.currentWeek) || new Map()
+      let map = this.listmap.get(this.selectedWeek) || new Map()
 
       for (let value of map.values()) {
         let values = value
@@ -254,7 +251,7 @@ export default {
       return chartdata1
     },
     mapToItems: function () {
-      let mapOfWeek = this.listmap.get(this.currentWeek) || new Map()
+      let mapOfWeek = this.listmap.get(this.selectedWeek) || new Map()
       let list = []
 
       for (let [key, value] of mapOfWeek.entries()) {
