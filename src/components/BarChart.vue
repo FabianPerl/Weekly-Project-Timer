@@ -1,20 +1,13 @@
 <script>
-import { Bar } from 'vue-chartjs'
+import { Bar, mixins } from 'vue-chartjs'
+const { reactiveProp } = mixins
 
 export default {
     data: () => ({
-        chartdata: {
-            labels: ['Spent','Available'],
-            datasets: [
-                {
-                label: 'Week 1',
-                backgroundColor: ['#f87979', 'green'],
-                data: [35, 6],
-                barThickness: 50,
-                }
-            ]
-        },
         options: {
+            legend: {
+                display: false
+            },
             scales: {
                 yAxes: [{
                     ticks: {
@@ -25,8 +18,9 @@ export default {
         }
     }),
     extends: Bar,
+    mixins: [reactiveProp],
     mounted () {
-        this.renderChart(this.chartdata, this.options)
+        this.renderChart(this.chartData, this.options)
     }
 }
 </script>

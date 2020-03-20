@@ -12,11 +12,8 @@
         <v-divider class="mx-4" inset vertical></v-divider>
         <h5>Week {{ currentWeek }}</h5>
       </div>
-
       <v-spacer></v-spacer>
-
     </v-app-bar>
-
     <v-content>
       <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
         <v-divider class="mb-12" inset vertical></v-divider>
@@ -39,7 +36,7 @@
                     <v-col cols="3">
                       <h3>Projects</h3>
                       <v-divider class="mb-5" inset vertical></v-divider>
-                      <doughnut :chart-data="chartdata"></doughnut>
+                      <doughnut :chart-data="chartDataDoughnut"></doughnut>
                       <div>
                         <v-divider inset vertical></v-divider>
                         <small><sup>*</sup>(time measured in minutes)</small>
@@ -48,10 +45,10 @@
                     <v-col cols="3">
                       <h3>Time Spent</h3>
                       <v-divider class="mb-5" inset vertical></v-divider>
-                      <bar></bar>
+                      <bar :chart-data="chartDataBar"></bar>
                       <v-row align="center">
                         <v-col col="1">
-                          <v-text-field disabled :placeholder="timeHours + ' Hours'" class="" type="number"></v-text-field>
+                          <v-text-field label="Hours per week" disabled :placeholder="timeHours + ' Hours'" class="" type="number"></v-text-field>
                         </v-col>
                         <v-col col="1">
                           <v-btn disabled small>Change</v-btn>
@@ -84,14 +81,17 @@ export default {
   },
 
   data: () => ({
+    spentHours: 0,
+    availableHours: 0,
     timeHours: 40,
-    freeHours: 6,
+
     timeEntries: 0,
     currentWeek: moment().week() + '',
     selectedWeek: moment().week() + '',
     buffered: 0,
     listmap: new Map(),
   }),
+
   created: function() {
     let map = new Map();
 
@@ -100,7 +100,9 @@ export default {
     } 
 
     this.listmap = map
+    this.calculateTimes()
   },
+
   methods: {
     // orderMap () {
     //   let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
@@ -123,6 +125,7 @@ export default {
       values.pop(pos)
 
       this.listmap = newSetMap
+      this.calculateTimes();
       this.saveEntries();
     },
     editEntry: function (entry) {
@@ -163,6 +166,7 @@ export default {
 
       this.listmap.get(week).get(date).push(newEntry)
       this.timeEntries++;
+      this.calculateTimes();
       this.saveEntries();
     },
     mapToJSON (map) {
@@ -190,7 +194,23 @@ export default {
     randomNumber: function() {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
     },
+    calculateTimes () {
+      let weekMap = this.listmap.get(this.selectedWeek)
+      let timeNeededMin = 0;
+
+      weekMap.forEach(function (k) {
+        k.forEach(obj => {
+          timeNeededMin+=obj.minutes
+        })
+      })
+
+      let timeNeededHours = (timeNeededMin / 60).toFixed(3)
+
+      this.availableHours = this.timeHours - timeNeededHours;
+      this.spentHours = timeNeededHours;
+    }
   },
+
   computed: {
     getAllWeeks: function () {
       return [...this.listmap.keys()]
@@ -209,7 +229,19 @@ export default {
 
       return [...projectSet];
     },
-    chartdata: function() {
+    chartDataBar: function () {
+      return {
+            labels: ['Spent','Available'],
+            datasets: [
+                {
+                  backgroundColor: ['#f87979', 'green'],
+                  barThickness: 50,
+                  data: [this.spentHours, this.availableHours]
+                }
+            ]
+      }
+    },
+    chartDataDoughnut: function() {
       let projectTimeMap = new Map();
       let map = this.listmap.get(this.selectedWeek) || new Map()
 
@@ -268,6 +300,12 @@ export default {
 
       return list;
     },
+  },
+
+  watch: {
+    selectedWeek: function () {
+      this.calculateTimes();
+    }
   }
 };
 </script>
