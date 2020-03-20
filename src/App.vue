@@ -9,6 +9,8 @@
         <h1>Timer</h1>
         <v-divider class="mx-4" inset vertical></v-divider>
         <h5>Project Manager</h5>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <h5>Week {{ currentWeek }}</h5>
       </div>
 
       <v-spacer></v-spacer>
@@ -37,7 +39,7 @@
                     <v-col cols="3">
                       <h3>Projects</h3>
                       <v-divider class="mb-5" inset vertical></v-divider>
-                      <doughnut :chart-data="chartdata" :options="chartoptions"></doughnut>
+                      <doughnut :chart-data="chartdata"></doughnut>
                       <div>
                         <v-divider inset vertical></v-divider>
                         <small><sup>*</sup>(time measured in minutes)</small>
@@ -69,6 +71,7 @@ import Timer from './components/Timer.vue'
 import List from './components/List.vue'
 import Doughnut from './components/DoughnutChart.vue'
 import Bar from './components/BarChart.vue'
+import moment from 'moment'
 
 export default {
   name: 'App',
@@ -84,6 +87,7 @@ export default {
     timeHours: 40,
     freeHours: 6,
     timeEntries: 0,
+    currentWeek: moment().week() + '',
     buffered: 0,
     listmap: new Map(),
     select: 'Week 1',
@@ -93,38 +97,33 @@ export default {
       'Week 3',
       'Week 4',
     ],
-    chartoptions: {
-    },
   }),
   created: function() {
     let map = new Map();
-    if (localStorage.entryMap) {
-      map = this.parseObjToMap(JSON.parse(localStorage.getItem('entryMap')))
+
+    if (localStorage.map) {
+      map = this.JSONToMap(localStorage.getItem('map'))
     } 
 
-    let date = this.formattedDate(new Date())
-    this.listmap = map;
-
-    // if todays date isn't set, create it and push it to the map
-    if (!this.listmap.has(date))
-      this.listmap.set(date, [])
-
-    this.orderMap()
+    this.listmap = map
   },
   methods: {
     orderMap () {
-      let sortedMap = new Map([...this.listmap.entries()].sort((a, b) => { 
-        return new Date(b[0]).getTime() - new Date(a[0]).getTime()
-      }))
+      let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
 
-      this.listmap = sortedMap
+      // sort the weeks time entries
+      sortEntries.sort((a, b) => { 
+        return new Date(b[0]).getTime() - new Date(a[0]).getTime()
+      })
+
+      this.listmap.set(this.currentWeek, sortEntries)
     },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     },
     deleteEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(entry.date)
+      let values = newSetMap.get(this.currentWeek).get(entry.date)
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
 
       values.pop(pos)
@@ -134,7 +133,7 @@ export default {
     },
     editEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(entry.date)
+      let values = newSetMap.get(this.currentWeek).get(entry.date)
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
       
       values[pos] = entry
@@ -146,6 +145,7 @@ export default {
       if (!newObj || typeof newObj === 'undefined')
         return
 
+      let week = this.currentWeek
       let date = this.formattedDate(new Date())
       let {description, time, topic, minutes} = newObj;
       let newEntry = {
@@ -157,26 +157,41 @@ export default {
         id : this.timeEntries
       }
 
+      // if week isn't set, create it and push it to the map
+      if (!this.listmap.has(week)) {
+        this.listmap.set(week, new Map())
+      }
+
+      // if todays date isn't set, create it and push it to the map
+      if (!this.listmap.get(week).has(date)) {
+        this.listmap.get(week).set(date, [])
+      }
+
+      this.listmap.get(week).get(date).push(newEntry)
       this.timeEntries++;
-      let list = this.listmap.get(date);
-      list.push(newEntry)
-      this.$set(this.listmap, date, list)
       this.saveEntries();
     },
-    parseObjToMap (obj) {
-      return new Map(Object.entries(obj))
-    },
-    parseMapToObj (map) {
-      return Array.from(map).reduce((obj, [key, value]) => {
-        obj[key] = value;
+    mapToJSON (map) {
+      return JSON.stringify(Array.from(map).reduce((obj, [key, value]) => {
+        obj[key] = Array.from(value).reduce((obj2, [key2, value2]) => {
+          obj2[key2] = value2;
+          return obj2}, {});
         return obj;
-      }, {});
+      }, {}))
+    },
+    JSONToMap (json) {
+        let outerMap = new Map(Object.entries(JSON.parse(json)))
+
+        for (let [key, value] of outerMap.entries()) {
+          outerMap.set(key, new Map(Object.entries(value)))
+        }
+
+        return outerMap
     },
     saveEntries () {
-      let arr = this.parseMapToObj(this.listmap)
-      let myMap = JSON.stringify(arr)
-      this.listmap = this.parseObjToMap(arr)
-      localStorage.setItem('entryMap', myMap)
+      this.listmap = this._.cloneDeep(this.listmap)
+      let mapstring = this.mapToJSON(this.listmap)
+      localStorage.setItem('map', mapstring)
     },
     randomNumber: function() {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
@@ -185,7 +200,7 @@ export default {
   computed: {
     getAllProjects: function () {
       let projectSet = new Set()
-      let map = this.listmap
+      let map = this.listmap.get(this.currentWeek) || new Map()
 
       for (let value of map.values()) {
         let values = value
@@ -198,9 +213,8 @@ export default {
       return [...projectSet];
     },
     chartdata: function() {
-      let myBackgroundColor = []
       let projectTimeMap = new Map();
-      let map = this.listmap
+      let map = this.listmap.get(this.currentWeek) || new Map()
 
       for (let value of map.values()) {
         let values = value
@@ -219,6 +233,7 @@ export default {
 
       let myLabels = []
       let timeNeeded = []
+      let myBackgroundColor = []
 
       projectTimeMap.forEach((value, key) => { 
         myLabels.push(key)         
@@ -239,10 +254,10 @@ export default {
       return chartdata1
     },
     mapToItems: function () {
-      let map = this.listmap
+      let mapOfWeek = this.listmap.get(this.currentWeek) || new Map()
       let list = []
 
-      for (let [key, value] of map.entries()) {
+      for (let [key, value] of mapOfWeek.entries()) {
         let date = key
         let values = value
 
@@ -254,7 +269,7 @@ export default {
         }
       }
 
-      return list; // Hack for reactivity
+      return list;
     },
   }
 };

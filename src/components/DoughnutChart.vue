@@ -5,14 +5,18 @@ const { reactiveProp } = mixins
 export default {
     extends: Doughnut,
     mixins: [reactiveProp],
-    props: {
-        options: {
-            default: null
-        },
-    },
     mounted () {
-        this.renderChart(this.chartData, this.options)
+        this.renderChart(this.chartData, {events: ['click', 'mousemove'], responsive: true, onClick: this.handleClick})
     },
+    methods: {
+        handleClick () {
+
+        }
+        // handleClick: function(point, event) {
+        //     const item = event[0]
+        //     console.log(item)
+        // }
+    }
 }
 </script>
 
