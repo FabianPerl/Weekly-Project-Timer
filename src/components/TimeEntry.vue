@@ -30,7 +30,7 @@ import EntryDialog from './EntryDialog'
 export default {
     components: { EntryDialog },
     name: 'TimeEntry',
-    props: ['time', 'topic', 'description', 'id', 'minutes'],
+    props: ['time', 'topic', 'description', 'id', 'seconds'],
     data: () => ({
         dialog: false,
         date: new Date(),
@@ -38,7 +38,7 @@ export default {
     methods: {
         editEntry (entry) {
             entry.id = this.id
-            entry.minutes = this.minutes
+            entry.seconds = this.seconds
             this.$emit('editEntry', entry)
         },
         deleteEntry () {

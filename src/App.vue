@@ -37,10 +37,6 @@
                       <h3>Projects</h3>
                       <v-divider class="mb-5" inset vertical></v-divider>
                       <doughnut :chart-data="chartDataDoughnut"></doughnut>
-                      <div>
-                        <v-divider inset vertical></v-divider>
-                        <small><sup>*</sup>(time measured in minutes)</small>
-                      </div>
                     </v-col>
                     <v-col cols="3">
                       <h3>Time Spent</h3>
@@ -48,7 +44,7 @@
                       <bar :chart-data="chartDataBar"></bar>
                       <v-row align="center">
                         <v-col col="1">
-                          <v-text-field label="Hours per week" disabled :placeholder="timeHours + ' Hours'" class="" type="number"></v-text-field>
+                          <v-text-field label="Hours per week" disabled :placeholder="(timeSeconds/60/60) + ' Hours'" class="" type="number"></v-text-field>
                         </v-col>
                         <v-col col="1">
                           <v-btn disabled small>Change</v-btn>
@@ -81,9 +77,9 @@ export default {
   },
 
   data: () => ({
-    spentHours: 0,
-    availableHours: 0,
-    timeHours: 40,
+    spentSec: 0,
+    availableSec: 0,
+    timeSeconds: 40 * 60 * 60,
 
     timeEntries: 0,
     currentWeek: moment().week() + '',
@@ -144,13 +140,13 @@ export default {
 
       let week = this.currentWeek
       let date = this.formattedDate(new Date())
-      let {description, time, topic, minutes} = newObj;
+      let {description, time, topic, seconds} = newObj;
       let newEntry = {
         description,
         time,
         date,
         topic,
-        minutes,
+        seconds,
         id : this.timeEntries
       }
 
@@ -195,19 +191,18 @@ export default {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
     },
     calculateTimes () {
+      if (this.listmap.size <= 0) return
       let weekMap = this.listmap.get(this.selectedWeek)
-      let timeNeededMin = 0;
+      let timeNeededSec = 0;
 
       weekMap.forEach(function (k) {
         k.forEach(obj => {
-          timeNeededMin+=obj.minutes
+          timeNeededSec+=obj.seconds
         })
       })
 
-      let timeNeededHours = (timeNeededMin / 60).toFixed(3)
-
-      this.availableHours = this.timeHours - timeNeededHours;
-      this.spentHours = timeNeededHours;
+      this.availableSeconds = this.timeSeconds - timeNeededSec;
+      this.spentSeconds = timeNeededSec;
     }
   },
 
@@ -230,13 +225,14 @@ export default {
       return [...projectSet];
     },
     chartDataBar: function () {
+      this.listmap.get(this.selectedWeek) || new Map()
       return {
             labels: ['Spent','Available'],
             datasets: [
                 {
                   backgroundColor: ['#f87979', 'green'],
                   barThickness: 50,
-                  data: [this.spentHours, this.availableHours]
+                  data: [(this.spentSeconds/60/60).toFixed(3), (this.availableSeconds/60/60).toFixed(3)]
                 }
             ]
       }
@@ -255,7 +251,7 @@ export default {
             oldValue = projectTimeMap.get(timeEntry.topic) 
           } 
 
-          let newValue = oldValue + timeEntry.minutes
+          let newValue = oldValue + timeEntry.seconds
           projectTimeMap.set(timeEntry.topic, +(newValue.toFixed(3)))
         }
       }
@@ -270,7 +266,7 @@ export default {
         myBackgroundColor.push(this.randomNumber()) 
       })
 
-      let chartdata1 = {
+      return {
         labels: myLabels,
         datasets: [
           {
@@ -279,8 +275,6 @@ export default {
           }
         ]
       }
-
-      return chartdata1
     },
     mapToItems: function () {
       let mapOfWeek = this.listmap.get(this.selectedWeek) || new Map()
