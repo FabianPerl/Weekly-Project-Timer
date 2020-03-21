@@ -44,10 +44,10 @@
                       <bar :chart-data="chartDataBar"></bar>
                       <v-row align="center">
                         <v-col col="1">
-                          <v-text-field label="Hours per week" disabled :placeholder="(timeSeconds/60/60) + ' Hours'" class="" type="number"></v-text-field>
+                          <v-text-field v-model="hoursSelect" step="0.5" label="Hours per week" :rules="[rules.val]" :placeholder="(timeSeconds/60/60) + ' Hours'" class="" type="number"></v-text-field>
                         </v-col>
                         <v-col col="1">
-                          <v-btn disabled small>Change</v-btn>
+                          <v-btn :disabled="hoursSelect < 0 || hoursSelect > 100" small @click="changeHours">Change</v-btn>
                         </v-col>
                       </v-row>
                     </v-col>
@@ -79,8 +79,11 @@ export default {
   data: () => ({
     spentSec: 0,
     availableSec: 0,
+    hoursSelect: 0,
     timeSeconds: 40 * 60 * 60,
-
+    rules: {
+      val: value => (value >= 0 && value <= 100)  || 'Values between 0 and 100'
+    },
     timeEntries: 0,
     currentWeek: moment().week() + '',
     selectedWeek: moment().week() + '',
@@ -96,10 +99,23 @@ export default {
     } 
 
     this.listmap = map
+
+    let hourInSeconds = 40 * 60 * 60;
+    if (localStorage.hour) {
+      hourInSeconds = localStorage.getItem('hour');
+    }
+
+    this.hoursSelect = hourInSeconds / 60 / 60
+    this.timeSeconds = hourInSeconds
     this.calculateTimes()
   },
 
   methods: {
+    changeHours () {
+      this.timeSeconds = this.hoursSelect * 60 * 60
+      localStorage.setItem('hour', this.timeSeconds);
+      this.calculateTimes()
+    },
     // orderMap () {
     //   let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
 
@@ -201,8 +217,8 @@ export default {
         })
       })
 
-      this.availableSeconds = this.timeSeconds - timeNeededSec;
-      this.spentSeconds = timeNeededSec;
+      this.availableSec = this.timeSeconds - timeNeededSec;
+      this.spentSec = timeNeededSec;
     }
   },
 
@@ -225,14 +241,16 @@ export default {
       return [...projectSet];
     },
     chartDataBar: function () {
-      this.listmap.get(this.selectedWeek) || new Map()
+      const spent = this.spentSec/60/60
+      const avail = this.availableSec/60/60
+
       return {
             labels: ['Spent','Available'],
             datasets: [
                 {
                   backgroundColor: ['#f87979', 'green'],
                   barThickness: 50,
-                  data: [(this.spentSeconds/60/60).toFixed(3), (this.availableSeconds/60/60).toFixed(3)]
+                  data: [(spent).toFixed(3), (avail).toFixed(3)]
                 }
             ]
       }
