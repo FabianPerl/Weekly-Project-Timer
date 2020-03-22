@@ -10,7 +10,6 @@ export default {
             tooltips: {
                 callbacks: {
                     label: function(tooltipItem, data) {
-                        console.log(data)
                         let secondsTotal = data.datasets[0].data[tooltipItem.index]
                         var hours   = Math.floor(secondsTotal / 3600);
                         var minutes = Math.floor((secondsTotal - (hours * 3600)) / 60);
