@@ -197,7 +197,7 @@ export default {
       // if todays date isn't set, create it and push it to the map
       if (!this.listmap.get(week).has(date)) {
         this.listmap.get(week).set(date, [])
-        this.orderMap(week)
+        // this.orderMap(week)
       }
 
       this.listmap.get(week).get(date).push(newEntry)
