@@ -17,7 +17,7 @@
     <v-content>
       <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
         <v-divider class="mb-12" inset vertical></v-divider>
-        <v-container>
+        <v-container v-if="showObj">
             <v-row>
                 <v-col cols="12">
                   <v-row>
@@ -77,6 +77,7 @@ export default {
   },
 
   data: () => ({
+    showObj: false,
     spentSec: 0,
     availableSec: 0,
     hoursSelect: 0,
@@ -116,16 +117,29 @@ export default {
       localStorage.setItem('hour', this.timeSeconds);
       this.calculateTimes()
     },
-    // orderMap () {
-    //   let sortEntries = [...this.listmap.get(this.currentWeek).entries()];
+    orderMap (week) {
+      // let weekEntries = this.listmap.get(week).entries();
+      // // console.log(weekEntries)
+      console.log(week)
 
-    //   // sort the weeks time entries
-    //   sortEntries.sort((a, b) => { 
-    //     return new Date(b[0]).getTime() - new Date(a[0]).getTime()
-    //   })
+      // weekEntries[Symbol.iterator] = function* () {
+      //   yield* [...this.entries()].sort((a, b) => {
+      //     console.log(a[0])
+      //     console.log(b[0])
+      //     new Date(a[0]).getTime() - new Date(b[0]).getTime()
+      //   });
+      // }
 
-    //   this.listmap.set(this.currentWeek, sortEntries)
-    // },
+
+
+      // sort the weeks time entries
+      // weekEntries.sort((a, b) => { 
+      //   console.log({a}, {b})
+      //   return new Date(b[0]).getTime() - new Date(a[0]).getTime()
+      // })
+
+      // this.listmap.set(week, weekEntries)
+    },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     },
@@ -135,6 +149,14 @@ export default {
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
 
       values.pop(pos)
+
+      if (values.length == 0) {
+        newSetMap.get(this.selectedWeek).delete(entry.date)
+
+        if (newSetMap.get(this.selectedWeek).size == 0) {
+          newSetMap.delete(this.selectedWeek)
+        }
+      }
 
       this.listmap = newSetMap
       this.calculateTimes();
@@ -174,6 +196,7 @@ export default {
       // if todays date isn't set, create it and push it to the map
       if (!this.listmap.get(week).has(date)) {
         this.listmap.get(week).set(date, [])
+        this.orderMap(week)
       }
 
       this.listmap.get(week).get(date).push(newEntry)
@@ -317,6 +340,9 @@ export default {
   watch: {
     selectedWeek: function () {
       this.calculateTimes();
+    },
+    listmap: function () {
+      this.showObj = this.listmap && this.listmap.size > 0
     }
   }
 };

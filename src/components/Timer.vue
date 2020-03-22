@@ -77,7 +77,6 @@ export default {
         },
         saveEntry: function (entry) {
             entry.seconds = (this.minutes * 60) + this.seconds + (this.hours * 60 * 60)
-
             this.$emit('newTimeEvent', entry)
         },
         everySecond: function () {
