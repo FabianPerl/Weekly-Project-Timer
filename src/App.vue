@@ -184,6 +184,7 @@ export default {
         time,
         date,
         topic,
+        color: this.randomNumber(), 
         seconds,
         id : this.timeEntries
       }
@@ -293,7 +294,7 @@ export default {
           } 
 
           let newValue = oldValue + timeEntry.seconds
-          projectTimeMap.set(timeEntry.topic, +(newValue.toFixed(3)))
+          projectTimeMap.set(timeEntry.topic, { time: +(newValue.toFixed(3)), color: timeEntry.color })
         }
       }
 
@@ -303,8 +304,8 @@ export default {
 
       projectTimeMap.forEach((value, key) => { 
         myLabels.push(key)         
-        timeNeeded.push(value)
-        myBackgroundColor.push(this.randomNumber()) 
+        timeNeeded.push(value.time)
+        myBackgroundColor.push(value.color) 
       })
 
       return {
