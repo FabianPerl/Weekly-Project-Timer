@@ -18,7 +18,7 @@
       <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
         <v-divider class="mb-12" inset vertical></v-divider>
         <v-container v-if="showObj">
-          <v-row align="center" justify="center">
+          <v-row justify="center">
             <v-col :xl="5" :lg="6" :md="6" :sm="12" :xs="12" class="pr-10">
               <v-combobox
                 style="width: 80px"
@@ -30,20 +30,20 @@
               ></v-combobox>
               <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
               </v-col>
-            <v-divider v-if="breakCol" class="ml-9 mr-9" inset vertical></v-divider>
+            <v-divider v-if="showDivider" class="ml-9 mr-9" inset vertical></v-divider>
             <v-col :xl="3" :lg="5" :md="5" :sm="8" :xs="12">
               <h3>Projects</h3>
               <v-divider class="mb-5" inset vertical></v-divider>
               <doughnut :chart-data="chartDataDoughnut"></doughnut>
             </v-col>
-            <v-col v-if="breakCol" :md="6"/>
-            <v-divider v-if="breakCol" class="ml-9 mr-9" inset vertical></v-divider>
+            <v-col v-if="showCol" :md="6"/>
+            <v-divider v-if="showCol" class="ml-9 mr-9" inset vertical></v-divider>
             <v-col :xl="3" :lg="5" :md="5" :sm="8" :xs="12">
               <h3>Time Spent</h3>
               <v-divider class="mb-5" inset vertical></v-divider>
               <bar :chart-data="chartDataBar"></bar>
               <v-container>
-                <v-row align="center" justify="center">
+                <v-row align="center">
                   <v-col col="1">
                     <v-text-field v-model="hoursSelect" step="0.5" label="Hours per week" :rules="[rules.val]" :placeholder="(timeSeconds/60/60) + ' Hours'" class="" type="number"></v-text-field>
                   </v-col>
@@ -247,7 +247,18 @@ export default {
   },
 
   computed: {
-    breakCol: function (){
+    showDivider: function (){
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return false
+        case 'sm': return false
+        case 'md': return true
+        case 'lg': return true
+        case 'xl': return true
+      }
+
+      return false
+    },
+    showCol: function (){
       switch (this.$vuetify.breakpoint.name) {
         case 'xs': return false
         case 'sm': return false
