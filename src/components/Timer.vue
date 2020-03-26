@@ -36,8 +36,8 @@ export default {
     },
     props: ['projects'],
     data: () => ({
-        dialog: false,
-        isRunning: true,
+        dialog: false,          // flag to show the dialog
+        isRunning: true,        // flag for resume - stop view
         start: true,            // flag for disabling start button
         stop: false,            // flag for disabling stop button
         save: false,            // flag for disabling save button

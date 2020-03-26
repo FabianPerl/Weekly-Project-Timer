@@ -118,27 +118,15 @@ export default {
       this.calculateTimes()
     },
     orderMap (week) {
-      // let weekEntries = this.listmap.get(week).entries();
-      // // console.log(weekEntries)
-      console.log(week)
+      let weekData = this.listmap.get(week)
 
-      // weekEntries[Symbol.iterator] = function* () {
-      //   yield* [...this.entries()].sort((a, b) => {
-      //     console.log(a[0])
-      //     console.log(b[0])
-      //     new Date(a[0]).getTime() - new Date(b[0]).getTime()
-      //   });
-      // }
+      let map = new Map([...weekData.entries()].sort((key1, key2) => {
+        return new Date(key2[0]).getTime() - new Date(key1[0]).getTime()
+      }))
 
+      console.log(map)
 
-
-      // sort the weeks time entries
-      // weekEntries.sort((a, b) => { 
-      //   console.log({a}, {b})
-      //   return new Date(b[0]).getTime() - new Date(a[0]).getTime()
-      // })
-
-      // this.listmap.set(week, weekEntries)
+      this.listmap.set(week, map)
     },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -194,10 +182,10 @@ export default {
         this.listmap.set(week, new Map())
       }
 
-      // if todays date isn't set, create it and push it to the map
+      // if todays date isn't set, create it and push it to the map, sort it after inserting new date
       if (!this.listmap.get(week).has(date)) {
         this.listmap.get(week).set(date, [])
-        // this.orderMap(week)
+        this.orderMap(this.currentWeek)
       }
 
       this.listmap.get(week).get(date).push(newEntry)
