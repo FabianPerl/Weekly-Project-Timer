@@ -16,7 +16,8 @@
                 <v-col cols="12">
                     <v-btn color="success" :disabled="!start" v-on:click="btnStartClicked">Start</v-btn>
                     <v-divider class="mx-4" inset vertical></v-divider>
-                    <v-btn color="error" :disabled="!stop" v-on:click="btnStopClicked">Stop</v-btn>
+                    <v-btn v-if="isRunning" color="error" :disabled="!stop" v-on:click="btnStopClicked">Stop</v-btn>
+                    <v-btn v-else color="warning" v-on:click="btnResumeClicked">Resume</v-btn>
                     <v-divider class="mx-4" inset vertical></v-divider>
                     <v-btn color="primary" :disabled="!save" v-on:click="btnOpenDialog">Save</v-btn>
                 </v-col>
@@ -36,6 +37,7 @@ export default {
     props: ['projects'],
     data: () => ({
         dialog: false,
+        isRunning: true,
         start: true,            // flag for disabling start button
         stop: false,            // flag for disabling stop button
         save: false,            // flag for disabling save button
@@ -55,6 +57,7 @@ export default {
         },
         btnStartClicked: function() {
             this.intervalId = setInterval(this.everySecond, 1000)
+            this.isRunning = true
             this.stop = true
             this.start = false
             this.save = false
@@ -62,8 +65,16 @@ export default {
             this.minutes = 0
             this.seconds = 0
         },
+        btnResumeClicked: function () {
+            this.isRunning = true
+            this.intervalId = setInterval(this.everySecond, 1000)
+            this.stop = true
+            this.start = false
+            this.save = false
+        },
         btnStopClicked: function () {
             clearInterval(this.intervalId)
+            this.isRunning = false
             this.intervalId = null
             this.start = true
             this.save = true
@@ -71,6 +82,7 @@ export default {
         },
         btnOpenDialog: function () {
             this.dialog = true
+            this.isRunning = true
             this.stop = false
             this.start = true 
             this.save = false
