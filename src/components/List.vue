@@ -16,7 +16,7 @@
                         :key="index"
                         ></v-divider>
 
-                        <time-entry v-else :key="item.title" :topic="item.subtitle.topic" :description="item.subtitle.description" :time="item.subtitle.time" :seconds="item.subtitle.seconds" v-on:editEntry="editEntry" :id="item.subtitle.id" v-on:deleteEntry="deleteEntry(item.subtitle.date, item.subtitle.id)"></time-entry>
+                        <time-entry v-else :key="item.title" :topic="item.subtitle.topic" :color="item.subtitle.color" :description="item.subtitle.description" :time="item.subtitle.time" :seconds="item.subtitle.seconds" v-on:editEntry="editEntry" :id="item.subtitle.id" v-on:deleteEntry="deleteEntry(item.subtitle.date, item.subtitle.id)"></time-entry>
                     </template>
                 </v-col>
             </v-row>

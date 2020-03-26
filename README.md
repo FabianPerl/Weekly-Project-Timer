@@ -22,6 +22,7 @@ You can add new time-entries to the list by starting the timer.
 
 ## Setup
 Note: To setup the project you have to install VueCLI.
+Furthermore, you should the localStorage when this Project was updated to take full advantage of this program.
 
 ### Project setup
 ```

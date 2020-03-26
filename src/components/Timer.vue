@@ -19,7 +19,7 @@
                     <v-btn v-if="isRunning" color="error" :disabled="!stop" v-on:click="btnStopClicked">Stop</v-btn>
                     <v-btn v-else color="warning" v-on:click="btnResumeClicked">Resume</v-btn>
                     <v-divider class="mx-4" inset vertical></v-divider>
-                    <v-btn color="primary" :disabled="!save" v-on:click="btnOpenDialog">Save</v-btn>
+                    <v-btn color="primary" :disabled="!save" v-on:click="dialog = true">Save</v-btn>
                 </v-col>
             </v-row>
         </v-container>
@@ -80,15 +80,12 @@ export default {
             this.save = true
             this.stop = false
         },
-        btnOpenDialog: function () {
-            this.dialog = true
+        saveEntry: function (entry) {
+            entry.seconds = (this.minutes * 60) + this.seconds + (this.hours * 60 * 60)
             this.isRunning = true
             this.stop = false
             this.start = true 
             this.save = false
-        },
-        saveEntry: function (entry) {
-            entry.seconds = (this.minutes * 60) + this.seconds + (this.hours * 60 * 60)
             this.$emit('newTimeEvent', entry)
         },
         everySecond: function () {

@@ -1,5 +1,7 @@
 <script>
 import { Doughnut, mixins } from 'vue-chartjs'
+import moment from 'moment'
+import momentDuration from 'moment-duration-format'
 const { reactiveProp } = mixins
 
 export default {
@@ -11,13 +13,9 @@ export default {
                 callbacks: {
                     label: function(tooltipItem, data) {
                         let secondsTotal = data.datasets[0].data[tooltipItem.index]
-                        var hours   = Math.floor(secondsTotal / 3600);
-                        var minutes = Math.floor((secondsTotal - (hours * 3600)) / 60);
-                        var seconds = secondsTotal - (hours * 3600) - (minutes * 60);
-
                         let projectHeader = data.labels[tooltipItem.index]
-
-                        return projectHeader + ": " + ("0" + hours).slice(-2) + ":" + ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2) + " (hh:mm:ss)"
+                        momentDuration(moment)
+                        return projectHeader + ": " + moment.duration(secondsTotal, 'seconds').format('hh:mm:ss', { trim: false }) + " (hh:mm:ss)"
                     }
                 }
             }
