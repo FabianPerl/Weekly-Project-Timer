@@ -8,14 +8,14 @@ Your data remains your data! :metal:
 You can add new time-entries to the list by starting the timer.
 
 ## Images
-### Timer
+<!-- ### Timer
 ![timer](./src/assets/images/Timer.png "Timer")
 
 ### List
 ![list](./src/assets/images/ProjectList.png "List")
 
 ### Chart
-![charts](./src/assets/images/Charts.png "Charts")
+![charts](./src/assets/images/Charts.png "Charts") -->
 
 ### Application
 ![application](./src/assets/images/Application.png "Application")
