@@ -17,7 +17,7 @@
     <v-content>
       <timer v-on:newTimeEvent="newTime" :projects="getAllProjects"></timer>
         <v-divider class="mb-12" inset vertical></v-divider>
-        <v-container v-if="showObj">
+        <v-container>
           <v-row justify="center">
             <v-col :xl="5" :lg="6" :md="7" :sm="12" :xs="12" class="pr-10">
               <v-combobox
@@ -30,8 +30,8 @@
               ></v-combobox>
               <list :items="mapToItems" v-on:editEntry="editEntry" v-on:deleteEntry="deleteEntry"></list>
               </v-col>
-            <v-divider v-if="showDivider" class="ml-2 mr-8" inset vertical></v-divider>
-            <v-col :xl="6" :lg="5" :md="4" :sm="8" :xs="12">
+            <v-divider v-if="showDivider && showObj" class="ml-2 mr-8" inset vertical></v-divider>
+            <v-col  v-if="showObj" :xl="6" :lg="5" :md="4" :sm="8" :xs="12">
                 <v-row justify="center">
                   <v-col :xl="6" :lg="8" :md="12" :sm="8" :xs="8">
                     <h3>Projects</h3>
@@ -101,13 +101,10 @@ export default {
   }),
 
   created: function() {
-    let map = new Map();
 
     if (localStorage['PROJECT_MANAGER:map']) {
-      map = this.JSONToMap(localStorage.getItem('PROJECT_MANAGER:map'))
+      this.listmap = this.JSONToMap(localStorage.getItem('PROJECT_MANAGER:map'))
     } 
-
-    this.listmap = map
 
     if (localStorage['PROJECT_MANAGER:userData']) {
       this.userData = JSON.parse(localStorage.getItem('PROJECT_MANAGER:userData'))
@@ -119,8 +116,17 @@ export default {
       })
     }
 
+    // if week isn't set, create it and push it to the map
+    if (!this.listmap.has(this.currentWeek)) {
+      this.userData = Object.assign({}, this.userData, { indexWeek: this.userData.indexWeek + 1})
+      this.calculateOvertime()
+      this.listmap.set(this.currentWeek, { projectData: new Map(), weeklyData: { overtime: 0, workingHours: 0 }})
+      // TODO: change the week to the current week
+    }
+    
     this.hoursSelect = this.userData.timeSeconds / 60 / 60
     this.calculateTimes()
+    this.saveEntries()
   },
 
   methods: {
@@ -129,39 +135,40 @@ export default {
       this.calculateTimes()
     },
     orderMap (week) {
-      let weekData = this.listmap.get(week)
+      let weekData = this.listmap.get(week).projectData
 
       let map = new Map([...weekData.entries()].sort((key1, key2) => {
         return new Date(key2[0]).getTime() - new Date(key1[0]).getTime()
       }))
 
-      this.listmap.set(week, map)
+      this.listmap.get(week).projectData = map
     },
     formattedDate: function (date) {
         return date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     },
     deleteEntry: function (entry) {
-      let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(this.selectedWeek).get(entry.date)
-      let pos = values.map(element => { return element.id }).indexOf(entry.id)
+      let newSetMap = this.listmap
+      let values = newSetMap.get(this.selectedWeek).projectData.get(entry.date)
+      let pos = values.map(element => element.id).indexOf(entry.id)
 
-      values.pop(pos)
-
-      if (values.length == 0) {
-        newSetMap.get(this.selectedWeek).delete(entry.date)
-
-        if (newSetMap.get(this.selectedWeek).size == 0) {
-          newSetMap.delete(this.selectedWeek)
-        }
+      if (pos > -1) {
+        values.splice(pos, 1);
       }
 
-      this.listmap = newSetMap
+      if (values.length == 0) {
+        newSetMap.get(this.selectedWeek).projectData.delete(entry.date)
+
+        // if (newSetMap.get(this.selectedWeek).projectData.size == 0) {
+        //   newSetMap.delete(this.selectedWeek)
+        // }
+      }
+
       this.calculateTimes();
       this.saveEntries();
     },
     editEntry: function (entry) {
       let newSetMap = new Map(this.listmap)
-      let values = newSetMap.get(this.selectedWeek).get(entry.date)
+      let values = newSetMap.get(this.selectedWeek).projectData.get(entry.date)
       let pos = values.map(element => { return element.id }).indexOf(entry.id)
       
       values[pos] = entry
@@ -186,21 +193,13 @@ export default {
         id : this.userData.timeEntries
       }
 
-      // if week isn't set, create it and push it to the map
-      if (!this.listmap.has(week)) {
-        this.userData = Object.assign({}, this.userData, { indexWeek: this.userData.indexWeek + 1})
-        this.calculateOvertime()
-        this.listmap.set(week, new Map())
-        // TODO: change the week to the current week
-      }
-
       // if todays date isn't set, create it and push it to the map, sort it after inserting new date
-      if (!this.listmap.get(week).has(date)) {
-        this.listmap.get(week).set(date, [])
+      if (!this.listmap.get(week).projectData.has(date)) {
+        this.listmap.get(week).projectData.set(date, [])
         this.orderMap(this.currentWeek)
       }
 
-      this.listmap.get(week).get(date).push(newEntry)
+      this.listmap.get(week).projectData.get(date).push(newEntry)
       this.userData = Object.assign({}, this.userData, { timeEntries: this.userData.timeEntries + 1})
       this.calculateTimes();
       this.saveEntries();
@@ -222,17 +221,20 @@ export default {
     },
     mapToJSON (map) {
       return JSON.stringify(Array.from(map).reduce((obj, [key, value]) => {
-        obj[key] = Array.from(value).reduce((obj2, [key2, value2]) => {
-          obj2[key2] = value2;
-          return obj2}, {});
-        return obj;
-      }, {}))
+        obj[key] = {
+              projectData: Array.from(value.projectData).reduce((obj2, [key2, value2]) => {
+              obj2[key2] = value2;
+              return obj2}, {}),
+              weeklyData: value.weeklyData
+            }
+          return obj;
+        }, {}))
     },
     JSONToMap (json) {
         let outerMap = new Map(Object.entries(JSON.parse(json)))
 
         for (let [key, value] of outerMap.entries()) {
-          outerMap.set(key, new Map(Object.entries(value)))
+          outerMap.set(key, { weeklyData: value.weeklyData, projectData: new Map(Object.entries(value.projectData)) })
         }
 
         return outerMap
@@ -246,8 +248,10 @@ export default {
       return 'rgba(' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',' + Math.floor((Math.random() * 255) + 1) + ',1)'
     },
     calculateTimes () {
-      if (this.listmap.size <= 0) return
-      let weekMap = this.listmap.get(this.selectedWeek)
+      if (this.listmap.get(this.selectedWeek) == null) return
+
+      let weekMap = this.listmap.get(this.selectedWeek).projectData
+
       let timeNeededSec = 0;
 
       weekMap.forEach(function (k) {
@@ -289,7 +293,10 @@ export default {
     },
     getAllProjects: function () {
       let projectSet = new Set()
-      let map = this.listmap.get(this.selectedWeek) || new Map()
+      let map = new Map()
+
+      if (this.listmap.get(this.selectedWeek) == null) return
+      else map = this.listmap.get(this.selectedWeek).projectData
 
       for (let value of map.values()) {
         let values = value
@@ -329,7 +336,10 @@ export default {
     },
     chartDataDoughnut: function() {
       let projectTimeMap = new Map();
-      let map = this.listmap.get(this.selectedWeek) || new Map()
+      let map = new Map()
+
+      if (this.listmap.get(this.selectedWeek) == null) return
+      else map = this.listmap.get(this.selectedWeek).projectData
 
       for (let value of map.values()) {
         let values = value
@@ -367,7 +377,11 @@ export default {
       }
     },
     mapToItems: function () {
-      let mapOfWeek = this.listmap.get(this.selectedWeek) || new Map()
+      let mapOfWeek = new Map()
+
+      if (this.listmap.get(this.selectedWeek) == null) return
+      else mapOfWeek = this.listmap.get(this.selectedWeek).projectData
+
       let list = []
 
       for (let [key, value] of mapOfWeek.entries()) {
@@ -391,7 +405,7 @@ export default {
       this.calculateTimes();
     },
     listmap: function () {
-      this.showObj = this.listmap && this.listmap.size > 0
+      this.showObj = this.listmap && this.listmap.get(this.selectedWeek) != null && this.listmap.get(this.selectedWeek).projectData.size > 0
     },
     userData () {
       localStorage.setItem('PROJECT_MANAGER:userData', JSON.stringify(this.userData))
