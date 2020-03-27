@@ -338,7 +338,7 @@ export default {
           let oldValue = 0
 
           if (projectTimeMap.has(timeEntry.topic)) {
-            oldValue = projectTimeMap.get(timeEntry.topic) 
+            oldValue = projectTimeMap.get(timeEntry.topic).time 
           } 
 
           let newValue = oldValue + timeEntry.seconds
